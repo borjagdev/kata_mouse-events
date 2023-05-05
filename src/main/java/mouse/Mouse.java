@@ -1,22 +1,22 @@
 package mouse;
 
-import mouse.MouseEventListener;
-import mouse.MouseEventType;
-import mouse.MousePointerCoordinates;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Mouse {
-    private List<MouseEventListener> listeners = new ArrayList<>();
+    private final List<MouseEventListener> listeners = new ArrayList<>();
+    private MouseEventRegistry currentStatus = MouseEventRegistry.initial;
     private final long timeWindowInMillisecondsForDoubleClick = 500;
 
     public void pressLeftButton(long currentTimeInMilliseconds) {
-        /*... implement this method ...*/
+        currentStatus = MouseEventRegistry.leftButtonPressed;
     }
 
     public void releaseLeftButton(long currentTimeInMilliseconds) {
-        /*... implement this method ...*/
+        if (currentStatus == MouseEventRegistry.leftButtonPressed) {
+            notifySubscribers(MouseEventType.SingleClick);
+        }
+        currentStatus = MouseEventRegistry.leftButtonReleased;
     }
 
     public void move(MousePointerCoordinates from, MousePointerCoordinates to, long
@@ -30,5 +30,12 @@ public class Mouse {
 
     private void notifySubscribers(MouseEventType eventType) {
         listeners.forEach(listener -> listener.handleMouseEvent(eventType));
+    }
+
+
+    private enum MouseEventRegistry {
+        initial,
+        leftButtonPressed,
+        leftButtonReleased
     }
 }
