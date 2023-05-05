@@ -6,6 +6,7 @@ import mouse.MouseEventType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static mouse.MouseEventType.DoubleClick;
 import static mouse.MouseEventType.SingleClick;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -58,7 +59,18 @@ public class MouseEventsKataTests {
         assertEquals(SingleClick, mouseEventListenerSpy.handlerCalledWith);
     }
 
+    @Test
+    public void notify_a_double_click() {
+        long currentTimestamp = System.currentTimeMillis();
+        mouse.subscribe(mouseEventListenerSpy);
 
+        mouse.pressLeftButton(currentTimestamp);
+        mouse.releaseLeftButton(currentTimestamp + 1);
+        mouse.pressLeftButton(currentTimestamp + 2);
+        mouse.releaseLeftButton(currentTimestamp + 3);
+
+        assertEquals(DoubleClick, mouseEventListenerSpy.handlerCalledWith);
+    }
 
     class MouseEventListenerSpy implements MouseEventListener {
         public MouseEventType handlerCalledWith;
