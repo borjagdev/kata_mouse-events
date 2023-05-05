@@ -15,6 +15,11 @@ public class Mouse {
         ) {
             notifySubscribers(MouseEventType.DoubleClick);
             currentStatus = MouseEventRegistry.leftButtonPressedTwice;
+        } else if (currentStatus == MouseEventRegistry.leftButtonReleasedTwice &&
+                (currentTimeInMilliseconds - currentStatusTimestamp <= timeWindowInMillisecondsForDoubleClick)
+        ) {
+            notifySubscribers(MouseEventType.TripleClick);
+            currentStatus = MouseEventRegistry.leftButtonPressedThrice;
         } else {
             currentStatus = MouseEventRegistry.leftButtonPressed;
         }
@@ -25,7 +30,11 @@ public class Mouse {
         if (currentStatus == MouseEventRegistry.leftButtonPressed) {
             notifySubscribers(MouseEventType.SingleClick);
         }
-        currentStatus = MouseEventRegistry.leftButtonReleased;
+        if (currentStatus == MouseEventRegistry.leftButtonPressedTwice) {
+            currentStatus = MouseEventRegistry.leftButtonReleasedTwice;
+        } else {
+            currentStatus = MouseEventRegistry.leftButtonReleased;
+        }
         currentStatusTimestamp = currentTimeInMilliseconds;
     }
 
@@ -46,6 +55,9 @@ public class Mouse {
     private enum MouseEventRegistry {
         initial,
         leftButtonPressed,
-        leftButtonPressedTwice, leftButtonReleased
+        leftButtonPressedTwice,
+        leftButtonReleasedTwice,
+        leftButtonPressedThrice,
+        leftButtonReleased
     }
 }
