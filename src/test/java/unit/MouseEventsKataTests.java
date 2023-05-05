@@ -3,20 +3,12 @@ package unit;
 import mouse.Mouse;
 import mouse.MouseEventListener;
 import mouse.MouseEventType;
-import mouse.MousePointerCoordinates;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import org.junit.runner.RunWith;
 
 import static mouse.MouseEventType.SingleClick;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertNull;
 
 public class MouseEventsKataTests {
     private MouseEventListenerSpy mouseEventListenerSpy = new MouseEventListenerSpy();
@@ -34,14 +26,34 @@ public class MouseEventsKataTests {
     //  drop
     //       no move
 
+    @Test
+    public void not_notify_a_single_click_when_there_is_no_release() {
+        long currentTimestamp = System.currentTimeMillis();
+        mouse.subscribe(mouseEventListenerSpy);
+
+        mouse.pressLeftButton(currentTimestamp);
+
+        assertNull(mouseEventListenerSpy.handlerCalledWith);
+    }
 
     @Test
-    public void single_click() {
+    public void notify_a_single_click() {
         long currentTimestamp = System.currentTimeMillis();
         mouse.subscribe(mouseEventListenerSpy);
 
         mouse.pressLeftButton(currentTimestamp);
         mouse.releaseLeftButton(currentTimestamp + 1);
+
+        assertEquals(SingleClick, mouseEventListenerSpy.handlerCalledWith);
+    }
+
+    @Test
+    public void notify_a_single_click_when_release_time_is_long_after_click() {
+        long currentTimestamp = System.currentTimeMillis();
+        mouse.subscribe(mouseEventListenerSpy);
+
+        mouse.pressLeftButton(currentTimestamp);
+        mouse.releaseLeftButton(currentTimestamp + 1000);
 
         assertEquals(SingleClick, mouseEventListenerSpy.handlerCalledWith);
     }
