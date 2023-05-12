@@ -5,13 +5,12 @@ import io.reactivex.subjects.PublishSubject;
 
 public class Mouse {
     private final PublishSubject<MouseAction> clickSubject = PublishSubject.create();
-    private final long timeWindowInMillisecondsForDoubleClick = 500;
 
-    public void pressLeftButton(long currentTimeInMilliseconds) {
+    public void pressLeftButton() {
         clickSubject.onNext(MouseAction.LeftButtonPressed);
     }
 
-    public void releaseLeftButton(long currentTimeInMilliseconds) {
+    public void releaseLeftButton() {
         clickSubject.onNext(MouseAction.LeftButtonReleased);
     }
 

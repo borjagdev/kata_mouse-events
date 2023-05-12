@@ -7,17 +7,21 @@ import mouse.MouseEventListener;
 import mouse.MouseEventType;
 import org.junit.Test;
 
+import static java.lang.System.currentTimeMillis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class MouseEventsKataTests {
     private final Mouse mouse = new Mouse();
 
-    class MockEventListener implements MouseEventListener {
+    static class MockEventListener implements MouseEventListener {
         private final Mouse mouse;
         private boolean wasLeftButtonPressed;
         private MouseEventType eventType;
         private Disposable clickSubscription;
+        private boolean possibleDoubleClick;
+        private long lastEvenTimestamp;
+        private final long timeWindowInMillisecondsForDoubleClick = 500;
 
         MockEventListener(Mouse mouse) {
             this.mouse = mouse;
@@ -29,8 +33,16 @@ public class MouseEventsKataTests {
                 if (event == MouseAction.LeftButtonPressed) {
                     wasLeftButtonPressed = true;
                 }
-                else if (event == MouseAction.LeftButtonReleased && wasLeftButtonPressed) {
-                    this.eventType = MouseEventType.SingleClick;
+                if (event == MouseAction.LeftButtonReleased) {
+                    if (possibleDoubleClick && currentTimeMillis() - lastEvenTimestamp < timeWindowInMillisecondsForDoubleClick) {
+                        this.eventType = MouseEventType.DoubleClick;
+                        this.possibleDoubleClick = false;
+                    } else if (wasLeftButtonPressed) {
+                        this.eventType = MouseEventType.SingleClick;
+                        this.possibleDoubleClick = true;
+                    }
+                    this.wasLeftButtonPressed = false;
+                    this.lastEvenTimestamp = currentTimeMillis();
                 }
             });
         }
@@ -62,8 +74,8 @@ public class MouseEventsKataTests {
         MockEventListener eventListener = new MockEventListener(mouse);
         eventListener.handleMouseEvent();
 
-        mouse.pressLeftButton(0);
-        mouse.releaseLeftButton(1);
+        mouse.pressLeftButton();
+        mouse.releaseLeftButton();
 
         assertEquals(MouseEventType.SingleClick, eventListener.getEventType());
     }
@@ -73,10 +85,23 @@ public class MouseEventsKataTests {
         MockEventListener eventListener = new MockEventListener(mouse);
         eventListener.handleMouseEvent();
 
-        mouse.pressLeftButton(0);
-        mouse.pressLeftButton(1);
+        mouse.pressLeftButton();
+        mouse.pressLeftButton();
 
         assertNull(eventListener.getEventType());
+    }
+
+    @Test
+    public void emit_double_click_event() {
+        MockEventListener eventListener = new MockEventListener(mouse);
+        eventListener.handleMouseEvent();
+
+        mouse.pressLeftButton();
+        mouse.releaseLeftButton();
+        mouse.pressLeftButton();
+        mouse.releaseLeftButton();
+
+        assertEquals(MouseEventType.DoubleClick, eventListener.getEventType());
     }
 
 }
