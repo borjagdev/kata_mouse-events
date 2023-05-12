@@ -8,6 +8,7 @@ import mouse.MouseEventType;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class MouseEventsKataTests {
     private final Mouse mouse = new Mouse();
@@ -66,4 +67,16 @@ public class MouseEventsKataTests {
 
         assertEquals(MouseEventType.SingleClick, eventListener.getEventType());
     }
+
+    @Test
+    public void not_emit_single_click_event() {
+        MockEventListener eventListener = new MockEventListener(mouse);
+        eventListener.handleMouseEvent();
+
+        mouse.pressLeftButton(0);
+        mouse.pressLeftButton(1);
+
+        assertNull(eventListener.getEventType());
+    }
+
 }
