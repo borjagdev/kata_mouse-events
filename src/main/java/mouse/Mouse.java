@@ -1,22 +1,18 @@
 package mouse;
 
-import mouse.MouseEventListener;
-import mouse.MouseEventType;
-import mouse.MousePointerCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 
 public class Mouse {
-    private List<MouseEventListener> listeners = new ArrayList<>();
+    private final PublishSubject<MouseAction> clickSubject = PublishSubject.create();
     private final long timeWindowInMillisecondsForDoubleClick = 500;
 
     public void pressLeftButton(long currentTimeInMilliseconds) {
-        /*... implement this method ...*/
+        clickSubject.onNext(MouseAction.LeftButtonPressed);
     }
 
     public void releaseLeftButton(long currentTimeInMilliseconds) {
-        /*... implement this method ...*/
+        clickSubject.onNext(MouseAction.LeftButtonReleased);
     }
 
     public void move(MousePointerCoordinates from, MousePointerCoordinates to, long
@@ -24,11 +20,7 @@ public class Mouse {
         /*... implement this method ...*/
     }
 
-    public void subscribe(MouseEventListener listener) {
-        listeners.add(listener);
-    }
-
-    private void notifySubscribers(MouseEventType eventType) {
-        listeners.forEach(listener -> listener.handleMouseEvent(eventType));
+    public Observable<MouseAction> getClickEventsChannel() {
+        return clickSubject.hide();
     }
 }

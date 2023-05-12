@@ -1,16 +1,47 @@
 package unit;
 
+import io.reactivex.disposables.Disposable;
 import mouse.Mouse;
+import mouse.MouseAction;
 import mouse.MouseEventListener;
 import mouse.MouseEventType;
-import mouse.MousePointerCoordinates;
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class MouseEventsKataTests {
-    private Mouse mouse;
+    private final Mouse mouse = new Mouse();
+
+    class MockEventListener implements MouseEventListener {
+        private final Mouse mouse;
+        private boolean wasLeftButtonPressed;
+        private MouseEventType eventType;
+        private Disposable clickSubscription;
+
+        MockEventListener(Mouse mouse) {
+            this.mouse = mouse;
+        }
+
+        @Override
+        public void handleMouseEvent() {
+            clickSubscription = mouse.getClickEventsChannel().subscribe(event -> {
+                if (event == MouseAction.LeftButtonPressed) {
+                    wasLeftButtonPressed = true;
+                }
+                else if (event == MouseAction.LeftButtonReleased && wasLeftButtonPressed) {
+                    this.eventType = MouseEventType.SingleClick;
+                }
+            });
+        }
+
+        public MouseEventType getEventType() {
+            return eventType;
+        }
+
+        public void stopHandlingEvents() {
+            clickSubscription.dispose();
+        }
+    }
 
     // TODO:
     //  single click
@@ -25,4 +56,14 @@ public class MouseEventsKataTests {
     //       no move
 
 
+    @Test
+    public void emit_single_click_event() {
+        MockEventListener eventListener = new MockEventListener(mouse);
+        eventListener.handleMouseEvent();
+
+        mouse.pressLeftButton(0);
+        mouse.releaseLeftButton(1);
+
+        assertEquals(MouseEventType.SingleClick, eventListener.getEventType());
+    }
 }
